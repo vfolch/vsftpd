@@ -99,3 +99,35 @@ rsa_cert_file=/etc/vsftpd/vsftpd.pem
 rsa_private_key_file=/etc/vsftpd/vsftpd.pem
 
 Y guardaremos los cambios y reiniciaremos el servicio.
+
+Para acabar tendremos que lograr acceder desde la maquina del usuario ubuntu al usuario admin, en otra maquina sin contraseña usando certificados autogenerados.
+
+En la maquina donde queramos crear el usuario admin, generaremos varias claves ssh
+
+ssh-keygen -t rsa -b 4096 -f admin_key
+
+Se generara dos archivos: admin_key (clave privada) y admin_key.pub (clave publica)
+
+Copiamos la clave publica en el archivo  "~/.ssh/authorized_keys" del usuario admin en la maquina destino, y para ello podemos hacerlo con este comando:
+
+ssh-copy-id -i admin_key.pub admin@192.168.1.98
+(La IP es en mi caso)
+
+Lo que hace es reemplazar la IP que hemos puesto por la dirección IP de la maquina destino
+
+Nos aseguraremos con el comando: chmod 600 ~/.ssh/authorized_keys
+Que teng alos permisos adecuados.
+
+En la maquina del usuario ubuntu, crearemos dos claves SSH (publica y privada)
+Y seguiremos los mismos pasos que hemos hecho antes.
+ssh-copy-id -i ubuntu_key.pub admin@192.168.1.97
+
+Despues tendremos que abrir el archivo sshd_config ubicado en /etc/ssh para verificar que en la línea "PasswordAuthentication" este configurado como "no"
+
+Ahora reiniciaremos el servicio ssh: sudo service ssh restart
+
+Y por ultimo tendremos que probar el acceso desde la maquina ubunu al usuario admin, abriremos la terminal del suuario ubuntu y ejecutamos:
+
+ssh -i ubuntu_key admin@192.168.1.98
+
+Y estableceremos conexión ssh sin necesidad de contraseña.
